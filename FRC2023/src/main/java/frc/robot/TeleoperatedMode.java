@@ -6,6 +6,7 @@ public class TeleoperatedMode implements IRobotMode {
     
     private XboxController xboxController;
     private IDrive drive;
+    private IArm arm;
 
     private static final double LEFT_STICK_EXPONENT = 3.0;
     private static final double RIGHT_STICK_EXPONENT = 3.0;
@@ -49,6 +50,18 @@ public class TeleoperatedMode implements IRobotMode {
         // Think Pythagorean Thereom
         if(Math.sqrt(Math.pow(rightX, 2) + Math.pow(rightY, 2)) > ROTATION_THRESHOLD) {
             drive.rotateAbsolute(angle);
+        }
+
+        if (xboxController.getPOV() == 0) {
+            arm.positionDefault(angle);
+        }
+
+        if (xboxController.getPOV() == 90) {
+            arm.positionExtended(angle);
+        }
+
+        if (xboxController.getPOV() == 90) {
+            arm.positionGrab(angle);
         }
 
      }
