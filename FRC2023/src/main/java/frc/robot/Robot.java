@@ -1,6 +1,7 @@
 package frc.robot;
 
-// import edu.wpi.first.hal.HAL;
+import edu.wpi.first.hal.DriverStationJNI;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,7 +19,7 @@ public class Robot extends RobotBase {
         gyroscope = new NavXMXP();
 
         drive = new Drive(gyroscope);
-        //drive = new NullDrive(gyroscope);
+        drive = new NullDrive(gyroscope);
         disabledMode = new DisabledMode();
         teleoperatedMode = new TeleoperatedMode(drive);
         autonomousMode = new AutonomousMode(drive);
@@ -27,12 +28,13 @@ public class Robot extends RobotBase {
 
     @Override
     public void startCompetition() {
-        // HAL.observeUserProgramStarting();
+        DriverStationJNI.observeUserProgramStarting();
 
         IRobotMode currentMode = null;
         IRobotMode desiredMode = null;
 
         while (true) {
+            DriverStation.refreshData();
             desiredMode = getDesiredMode();
             
             if (desiredMode != currentMode) {
@@ -59,16 +61,16 @@ public class Robot extends RobotBase {
 
     private IRobotMode getDesiredMode() {
         if (isDisabled()) {
-            // HAL.observeUserProgramDisabled();
+            DriverStationJNI.observeUserProgramDisabled();
             return disabledMode;
         } else if (isAutonomous()) {
-            // HAL.observeUserProgramAutonomous();
+            DriverStationJNI.observeUserProgramAutonomous();
             return autonomousMode;
         } else if (isTeleop()) {
-            // HAL.observeUserProgramTeleop();
+            DriverStationJNI.observeUserProgramTeleop();
             return teleoperatedMode;
         } else if (isTest()) {
-            // HAL.observeUserProgramTest();
+            DriverStationJNI.observeUserProgramTest();
             return teleoperatedMode;
         } else {
             throw new IllegalStateException("Robot is in an invalid mode");

@@ -38,6 +38,9 @@ public class Drive implements IDrive {
     private double autoAngleDegrees;
     private double desiredDistance;
 
+    // gyro correction
+    private double pitchAngle;
+
     private static final double ROTATION_TOLERANCE_DEGREES = 2.0;
 
     public Drive(IGyroscopeSensor gyroscope) {
@@ -93,6 +96,22 @@ public class Drive implements IDrive {
     @Override
     public void driveDistance(double distanceInches, double speed, double angle) {
         driveDistance(distanceInches, speed, angle, null);
+    }
+
+    @Override
+    public void gyroCorrection() {
+        pitchAngle = gyroscope.getPitch();
+        while(true) {
+            if (pitchAngle > 5) {
+                driveDistance(1, 0.5, 0, null);
+            }
+            else if (pitchAngle < -5) {
+                driveDistance(1, -0.5, 0, null);
+            }
+            else if (pitchAngle == 0) {
+                break;
+            }
+            }
     }
 
     @Override

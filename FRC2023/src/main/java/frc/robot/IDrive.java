@@ -22,6 +22,8 @@ public interface IDrive {
      */
     public void driveDistance(double distanceInches, double speed, double angle, Runnable completionRoutine);
 
+    public void gyroCorrection();
+
     public void rotateRelative(double angle, Runnable completionRoutine);
 
     public void rotateAbsolute(double angle, Runnable completionRoutine);

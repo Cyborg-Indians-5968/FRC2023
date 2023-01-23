@@ -26,6 +26,10 @@ public class NullDrive implements IDrive {
     public void driveDistance(double distanceInches, double speed, double angle) {
     }
 
+    public void gyroCorrection() {
+        
+    }
+
     public void driveDistance(double distanceInches, double speed, double angle, Runnable completionRoutine) {  
     }
 

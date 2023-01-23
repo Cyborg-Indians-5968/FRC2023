@@ -9,13 +9,13 @@ public class AutonomousMode implements IRobotMode {
         this.drive = drive;
     }
 
-    public void autoMove() {
-        drive.driveDistance(52, -speed, 0, null);
-        Debug.log("autoMove2");
+    public void init() {
+        autoBalance();
     }
 
-    public void init() {
-        // add init code
+    public void autoBalance() {
+        drive.driveDistance(12, .5, 0, null);
+        drive.gyroCorrection( /* put parameters in here */);
     }
 
     @Override
