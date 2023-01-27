@@ -35,11 +35,13 @@ public class ControlSchemeA extends ControlScheme {
     }
 
     public boolean changeAngle(){
+        //Think Pythagorean theorem
         return Math.sqrt(Math.pow(rightX, 2) + Math.pow(rightY, 2)) > ROTATION_THRESHOLD;
     }
 
     @Override
     public void periodicSync(){
+        //joystick calculations
         double leftX = controller.getLeftX();
         double leftY = -controller.getLeftY();
 

@@ -14,10 +14,13 @@ public abstract class ControlScheme {
 
     public abstract double getMovementY();
 
+    //should the gyro reset?
     public abstract boolean resetGyro();
 
+    //angle for the robot
     public abstract double getAngle();
 
+    //should the robot point in a different direction?
     public abstract boolean changeAngle();
 
     //must be called in the same periodic that controlls the drive
