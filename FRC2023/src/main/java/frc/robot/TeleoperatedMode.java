@@ -6,14 +6,12 @@ public class TeleoperatedMode implements IRobotMode {
     
     private XboxController xboxController;
     private IDrive drive;
-
-    private static final double LEFT_STICK_EXPONENT = 3.0;
-    private static final double RIGHT_STICK_EXPONENT = 3.0;
-    private static final double ROTATION_THRESHOLD = 0.3;
+    private ControlScheme controlScheme;
     // check values above
 
     public TeleoperatedMode(IDrive drive){ 
         xboxController = new XboxController(PortMap.USB.XBOXCONTROLLER);
+        controlScheme = new ControlSchemeA(xboxController);
         this.drive = drive;
     }
 
@@ -25,30 +23,17 @@ public class TeleoperatedMode implements IRobotMode {
      @Override
      public void periodic() {
 
-        if (xboxController.getBackButton()) {
+        if (controlScheme.resetGyro()) {
             drive.resetGyro();
         }
 
-        double leftX = xboxController.getLeftX();
-        double leftY = -xboxController.getLeftY();
+        controlScheme.periodicSync();
 
-        leftX = Math.pow(leftX, LEFT_STICK_EXPONENT);
-        leftY = Math.pow(leftY, LEFT_STICK_EXPONENT);
-
-        drive.driveManual(leftY, leftX);
-
-        //Process Rotation Control
-        double rightX = xboxController.getRightX();
-        double rightY = -xboxController.getRightY();
-
-        rightX = Math.pow(rightX, RIGHT_STICK_EXPONENT);
-        rightY = Math.pow(rightY, RIGHT_STICK_EXPONENT);
-
-        double angle = Math.atan2(rightX, rightY);
+        drive.driveManual(controlScheme.getMovementY(), controlScheme.getMovementX());
 
         // Think Pythagorean Thereom
-        if(Math.sqrt(Math.pow(rightX, 2) + Math.pow(rightY, 2)) > ROTATION_THRESHOLD) {
-            drive.rotateAbsolute(angle);
+        if(controlScheme.changeAngle()) {
+            drive.rotateAbsolute(controlScheme.getAngle());
         }
 
      }
