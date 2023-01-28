@@ -5,9 +5,9 @@ import edu.wpi.first.wpilibj.XboxController;
 public class ControlSchemeA extends ControlScheme {
     //implementation of a control scheme
 
-    private final static double ROTATION_THRESHOLD = 0.3;
-    private final static double LEFT_STICK_EXPONENT = 3.0;
-    private final static double RIGHT_STICK_EXPONENT = 3.0;
+    protected final static double ROTATION_THRESHOLD = 0.3;
+    protected final static double LEFT_STICK_EXPONENT = 3.0;
+    protected final static double RIGHT_STICK_EXPONENT = 3.0;
     
     double leftX = controller.getLeftX();
     double leftY = controller.getLeftY();
@@ -37,6 +37,10 @@ public class ControlSchemeA extends ControlScheme {
     public boolean changeAngle(){
         //Think Pythagorean theorem
         return Math.sqrt(Math.pow(rightX, 2) + Math.pow(rightY, 2)) > ROTATION_THRESHOLD;
+    }
+
+    public boolean changeScheme(){
+        return controller.getStartButtonPressed();
     }
 
     @Override

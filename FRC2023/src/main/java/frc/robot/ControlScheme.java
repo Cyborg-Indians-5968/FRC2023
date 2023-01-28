@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.XboxController;
 
 public abstract class ControlScheme {
     //represents a control scheme
-    XboxController controller;
+    protected XboxController controller;
 
     public ControlScheme(){
         controller = new XboxController(PortMap.USB.XBOXCONTROLLER);
@@ -22,6 +22,8 @@ public abstract class ControlScheme {
 
     //should the robot point in a different direction?
     public abstract boolean changeAngle();
+
+    public abstract boolean changeScheme();
 
     //must be called in the same periodic that controlls the drive
     public void periodicSync(){};
