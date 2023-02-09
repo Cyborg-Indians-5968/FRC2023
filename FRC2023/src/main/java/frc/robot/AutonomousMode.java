@@ -1,25 +1,51 @@
 package frc.robot;
 
+import java.lang.Thread;
+
+
 public class AutonomousMode implements IRobotMode {
 
     private IDrive drive;
-    private double speed = 0.15;
-
-    public AutonomousMode(IDrive drive) {
+    private IGyroscopeSensor gyroscope;
+    
+    public AutonomousMode(IDrive drive, IGyroscopeSensor gyroscope) {
         this.drive = drive;
-    }
+        this.gyroscope = gyroscope;
+        }
+
 
     public void init() {
-        autoBalance();
+        move();
     }
 
-    public void autoBalance() {
-        drive.driveDistance(12, .5, 0, null);
-        drive.gyroCorrection( /* put parameters in here */);
+    public void move() {
+        if (gyroscope.getRoll() > .2) {
+            drive.cartesianMovement(gyroscope.getRoll()/2, 0.01, null);
+            try {
+                Thread.sleep(1000);
+            } catch(InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            Debug.logPeriodic("Rolling positive");
+        }
+        else if (gyroscope.getRoll() < -.2) {
+            drive.cartesianMovement(gyroscope.getRoll()/2, -0.01, null);
+            try {
+                Thread.sleep(1000);
+            } catch(InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            Debug.logPeriodic("Rolling negative");
+        }
+        else {
+            drive.stop();
+
+        }
     }
 
     @Override
     public void periodic() {
-
+        move();
     }
 }
+

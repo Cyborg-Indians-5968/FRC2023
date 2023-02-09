@@ -20,7 +20,11 @@ public interface IDrive {
      * completionRoutine is called when the current action has been completed
      * Autonomous methods use degrees
      */
+    public void cartesianMovement(double distance, double direction, Runnable completionRoutine);
+    
     public void driveDistance(double distanceInches, double speed, double angle, Runnable completionRoutine);
+
+    public void driveRevolutions(double rotations, double speed, double angle, Runnable completionRoutine);
 
     public void gyroCorrection();
 

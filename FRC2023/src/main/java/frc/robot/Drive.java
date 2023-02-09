@@ -4,11 +4,12 @@ import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.controller.PIDController;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 public class Drive implements IDrive {
 
     private MecanumDrive driveBase;
-    
+
     private Mode mode;
     private IGyroscopeSensor gyroscope;
     private Runnable currentCompletionRoutine;
@@ -35,11 +36,8 @@ public class Drive implements IDrive {
 
     // auto
     private double autoSpeed;
-    private double autoAngleDegrees;
+    private Rotation2d autoAngleDegrees;
     private double desiredDistance;
-
-    // gyro correction
-    private double pitchAngle;
 
     private static final double ROTATION_TOLERANCE_DEGREES = 2.0;
 
@@ -82,8 +80,14 @@ public class Drive implements IDrive {
     @Override
     public void rotateRelative(double angle) {
         mode = Mode.MANUAL;
-        
-        desiredAngle = gyroscope.getYaw() + angle; 
+
+        desiredAngle = gyroscope.getYaw() + angle;
+    }
+
+    @Override
+    public void cartesianMovement(double distance, double direction, Runnable completionRoutine) {
+        driveBase.driveCartesian(distance, direction, 0);
+        Debug.logPeriodic(Double.toString(frontLeftMotor.getEncoder().getPosition()));
     }
 
     @Override
@@ -100,40 +104,59 @@ public class Drive implements IDrive {
 
     @Override
     public void gyroCorrection() {
-        pitchAngle = gyroscope.getPitch();
-        while(true) {
-            if (pitchAngle > 5) {
-                driveDistance(1, 0.5, 0, null);
-            }
-            else if (pitchAngle < -5) {
-                driveDistance(1, -0.5, 0, null);
-            }
-            else if (pitchAngle == 0) {
-                break;
-            }
-            }
+        double rollAngle = gyroscope.getRoll();
+
+        Debug.logPeriodic(Double.toString(gyroscope.getRoll()));
+
+        if (rollAngle > .1) {
+            driveDistance(1, 0.1, 0, null);
+        }
+        else if (rollAngle < -.1) {
+            driveDistance(1, -0.1, 0, null);
+        }
+        else if (rollAngle == 0) {
+            stop();
+        }
     }
 
     @Override
     public void driveDistance(double distanceInches, double speed, double angle, Runnable completionRoutine) {
-        
+
+        mode = Mode.AUTO;
+
+        distanceInches = distanceInches / 1.93;
+
+        frontLeftMotor.getEncoder().setPosition(0.0);
+        frontRightMotor.getEncoder().setPosition(0.0);
+        rearLeftMotor.getEncoder().setPosition(0.0);
+        rearRightMotor.getEncoder().setPosition(0.0);
+
+        setCompletionRoutine(completionRoutine);
+        desiredDistance = distanceInches;
+        autoSpeed = speed;
+        autoAngleDegrees = Rotation2d.fromDegrees(-angle);
+    }
+
+    @Override
+    public void driveRevolutions(double rotations, double speed, double angle, Runnable completionRoutine) {
         mode = Mode.AUTO;
 
         frontLeftMotor.getEncoder().setPosition(0.0);
         frontRightMotor.getEncoder().setPosition(0.0);
         rearLeftMotor.getEncoder().setPosition(0.0);
         rearRightMotor.getEncoder().setPosition(0.0);
-        
+
         setCompletionRoutine(completionRoutine);
-        desiredDistance = distanceInches;
+        desiredDistance = rotations;
         autoSpeed = speed;
-        autoAngleDegrees = -angle;
+        autoAngleDegrees = Rotation2d.fromDegrees(-angle);
+
     }
 
     @Override
     public void rotateRelative(double angle, Runnable completionRoutine) {
         mode = Mode.AUTO;
-        
+
         setCompletionRoutine(completionRoutine);
         desiredAngle = gyroscope.getYaw() + Math.toRadians(angle);
     }
@@ -141,7 +164,7 @@ public class Drive implements IDrive {
     @Override
     public void rotateAbsolute(double angle, Runnable completionRoutine) {
         mode = Mode.AUTO;
-        
+        resetGyro();
         setCompletionRoutine(completionRoutine);
         desiredAngle = Math.toRadians(angle);
     }
@@ -149,8 +172,9 @@ public class Drive implements IDrive {
     public void driveManualImplementation(double forwardSpeed, double strafeSpeed) {
         mode = Mode.MANUAL;
 
-        double absoluteForward = .9 * (forwardSpeed * Math.cos(gyroscope.getYaw()) + strafeSpeed * Math.sin(gyroscope.getYaw()));
-        double absoluteStrafe = .9 * (-forwardSpeed * Math.sin(gyroscope.getYaw()) + strafeSpeed * Math.cos(gyroscope.getYaw())); 
+        double absoluteForward = 1 * (forwardSpeed * Math.cos(gyroscope.getYaw()) + strafeSpeed * Math.sin(gyroscope.getYaw()));
+        double absoluteStrafe = 1
+         * (-forwardSpeed * Math.sin(gyroscope.getYaw()) + strafeSpeed * Math.cos(gyroscope.getYaw()));
 
         this.forwardSpeed = absoluteForward;
         this.strafeSpeed = absoluteStrafe;
@@ -195,7 +219,7 @@ public class Drive implements IDrive {
 
     private void handleActionEnd() {
         stop();
-        
+
         if (currentCompletionRoutine != null) {
             Runnable oldCompletionRoutine = currentCompletionRoutine;
             currentCompletionRoutine = null;
@@ -205,7 +229,7 @@ public class Drive implements IDrive {
 
     private void manualControlPeriodic() {
         angularSpeed = .45 * rotationController.calculate(gyroscope.getYaw(), desiredAngle);
-        
+
         driveBase.driveCartesian(forwardSpeed, strafeSpeed, angularSpeed);
     }
 
@@ -213,28 +237,30 @@ public class Drive implements IDrive {
     public void periodic() {
         if (mode == Mode.MANUAL) {
             manualControlPeriodic();
-            //Debug.logPeriodic("Yaw " + Double.toString(gyroscope.getYaw()));
-            //Debug.logPeriodic("desired angle " + Double.toString(desiredAngle));
-            //Debug.logPeriodic("angular speed" + Double.toString(angularSpeed));
+
+            Debug.logPeriodic("Roll" + Double.toString(gyroscope.getRoll()));
         } else if (mode == Mode.AUTO) {
             Debug.logPeriodic("autodrive is running");
-            angularSpeed = rotationController.calculate(gyroscope.getYaw(), desiredAngle);
-        
-            // driveBase.drivePolar(autoSpeed, autoAngleDegrees, angularSpeed);
 
+            angularSpeed = .25 * rotationController.calculate(0, desiredAngle);
+
+            //driveBase.drivePolar(autoSpeed, autoAngleDegrees, -.1);
+            driveBase.driveCartesian(0, 0, angularSpeed);
             // Check if we've completed our travel
             double averageDistanceTraveledLeft = Math.abs((frontLeftMotor.getEncoder().getPosition() + rearLeftMotor.getEncoder().getPosition()) / 2);
             double averageDistanceTraveledRight = Math.abs((frontRightMotor.getEncoder().getPosition() + rearRightMotor.getEncoder().getPosition()) / 2);
             double averageDistanceTraveled = Math.abs((averageDistanceTraveledLeft + averageDistanceTraveledRight) / 2);
+
             //Debug.logPeriodic("Total Distance: " + averageDistanceTraveled);
             //Debug.logPeriodic("Rear left encoder: " + rearLeftMotor.getEncoder().getPosition());
             //Debug.logPeriodic("Rear right encoder: " + rearRightMotor.getEncoder().getPosition());
             //Debug.logPeriodic("Front left encoder: " + frontLeftMotor.getEncoder().getPosition());
             //Debug.logPeriodic("Front right encoder: " + frontRightMotor.getEncoder().getPosition());
-            if (averageDistanceTraveled > desiredDistance) {
+            if (averageDistanceTraveled > desiredDistance && gyroscope.getYaw() > desiredAngle) {
                 Debug.log("stopped");
+                resetGyro();
                 handleActionEnd();
-            } 
+            }
         } else {
             throw new IllegalArgumentException("The drive base controller is in an invalid drive mode.");
         }

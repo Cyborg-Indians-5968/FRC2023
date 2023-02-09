@@ -17,6 +17,9 @@ public class NullDrive implements IDrive {
         return Mode.IDLE;
     }
 
+    public void cartesianMovement(double distance, double direction, Runnable completionRoutine) {
+    }
+
     public void rotateRelative(double angle) {
     }
 
@@ -24,6 +27,10 @@ public class NullDrive implements IDrive {
     }
 
     public void driveDistance(double distanceInches, double speed, double angle) {
+    }
+
+    public void driveRevolutions(double rotations, double speed, double angle, Runnable completionRoutine) {
+
     }
 
     public void gyroCorrection() {

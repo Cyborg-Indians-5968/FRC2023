@@ -19,10 +19,10 @@ public class Robot extends RobotBase {
         gyroscope = new NavXMXP();
 
         drive = new Drive(gyroscope);
-        drive = new NullDrive(gyroscope);
+        // drive = new NullDrive(gyroscope);
         disabledMode = new DisabledMode();
         teleoperatedMode = new TeleoperatedMode(drive);
-        autonomousMode = new AutonomousMode(drive);
+        autonomousMode = new AutonomousMode(drive, gyroscope);
     }
 
 

@@ -11,6 +11,7 @@ public class NavXMXP implements IGyroscopeSensor{
         Debug.log("Start");
         navX = new AHRS(SerialPort.Port.kUSB1);
         navX.enableBoardlevelYawReset(false);
+        
     }
     
     @Override
@@ -32,5 +33,4 @@ public class NavXMXP implements IGyroscopeSensor{
     public void resetYaw() {
         navX.reset();
     }
-
 }
